@@ -1,3 +1,5 @@
+*.sql
+*.csv
 # Logs
 logs
 *.log
