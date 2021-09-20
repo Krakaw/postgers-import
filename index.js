@@ -1,12 +1,8 @@
 const commandLineArgs = require('command-line-args')
 const fs = require('fs');
-const stream = require('stream');
-const readline = require('readline')
 const lineReader = require('line-reader');
 const { exec } = require("child_process");
 const cliProgress = require('cli-progress');
-
-const Transform = stream.Transform;
 
 const tables = {};
 
