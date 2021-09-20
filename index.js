@@ -10,7 +10,7 @@ const optionDefinitions = [
     { name: 'verbose', alias: 'v', type: Boolean },
     { name: 'src', type: String, defaultOption: true },
     { name: 'move-constraints', type: Boolean},
-    { name: 'skip-data', type: String, multiple: true},
+    { name: 'skip-data', type: String, multiple: true, defaultValue: []},
     { name: 'outfile', type: String },
     { name: 'stdout', type: Boolean },
 ]
@@ -20,7 +20,6 @@ let outfile = false;
 if (options.outfile) {
     outfile = fs.createWriteStream(options.outfile);
 }
-options['skip-data'] = options['skip-data'] || [];
 
 let totalLineCount = 0;
 let currentLineCount = 0;
@@ -33,6 +32,10 @@ const bar1 = new cliProgress.SingleBar({
     format: '{name} [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}'
 }, cliProgress.Presets.shades_classic);
 
+
+function skipData(tableName) {
+    return options['skip-data'].indexOf(`${tableName}`) > -1;
+}
 exec(`wc -l ${options.src} | cut -d' ' -f 1`, (err, stdout, stderr) => {
     if (err || stderr) {
         console.error(err || stderr);
@@ -56,13 +59,13 @@ exec(`wc -l ${options.src} | cut -d' ' -f 1`, (err, stdout, stderr) => {
             };
         } else if (checkLine.indexOf('COPY ') === 0) {
             let [,tableName] = checkLine.split(' ')
-            if (options['skip-data'].indexOf(tableName) > -1) {
+            if (skipData(tableName)) {
                 line = null;
             }
             currentTable = tableName;
             status = 'COPY_DATA';
         } else if (checkLine === '\.') {
-            if (options['skip-data'] && options['skip-data'].indexOf(currentTable) > -1) {
+            if (skipData(currentTable)) {
                 line = null;
             }
             status = false;
@@ -80,7 +83,7 @@ exec(`wc -l ${options.src} | cut -d' ' -f 1`, (err, stdout, stderr) => {
         else {
             if (status === 'COPY_DATA' && currentTable) {
                 tables[currentTable].dataLines++;
-                if (options['skip-data'].indexOf(currentTable) > -1) {
+                if (skipData(currentTable)) {
                     line = null;
                 }
             }
