@@ -20,6 +20,7 @@ let outfile = false;
 if (options.outfile) {
     outfile = fs.createWriteStream(options.outfile);
 }
+options['skip-data'] = options['skip-data'] || [];
 
 let totalLineCount = 0;
 let currentLineCount = 0;
@@ -61,7 +62,7 @@ exec(`wc -l ${options.src} | cut -d' ' -f 1`, (err, stdout, stderr) => {
             currentTable = tableName;
             status = 'COPY_DATA';
         } else if (checkLine === '\.') {
-            if (options['skip-data'].indexOf(currentTable) > -1) {
+            if (options['skip-data'] && options['skip-data'].indexOf(currentTable) > -1) {
                 line = null;
             }
             status = false;
